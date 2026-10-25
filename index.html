@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Digital Product Hub</title>
+  <meta name="description" content="Kelas, aplikasi, dan materi digital dalam satu portal.">
+  <meta name="theme-color" content="#1E40AF">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231E40AF'/%3E%3Cpath d='M20 22h14a10 10 0 010 20H20z' fill='%23fff'/%3E%3C/svg%3E">
+
+  <!-- Koneksi dini ke server Apps Script & CDN (mempercepat request pertama di HP) -->
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="https://accounts.google.com">
+
+  <!-- Inter — satu-satunya typeface (DESIGN.md) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/base.css?v=3.5">
+  <link rel="stylesheet" href="css/app.css?v=3.5">
+  <!-- v3.5: desain biru elegan (hero video, kartu interaktif, dashboard baru) -->
+  <link rel="stylesheet" href="css/v35.css?v=3.5">
+  <!-- Tailwind v3 hasil build (pengganti CDN Play: tanpa kompilasi di browser → jauh lebih ringan di HP) -->
+  <link rel="stylesheet" href="css/tw.css?v=3.5">
+
+  <!-- Skrip: defer = tidak memblokir tampilan. jQuery/DataTables/Chart.js & modul admin dimuat otomatis hanya untuk Superadmin/Admin -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
+  <!-- Google Identity Services — Sign in with Google (Superadmin) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body class="antialiased layout-public">
+
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner-lg"></div>
+    <p class="mt-4 text-sm text-muted">Memuat portal…</p>
+  </div>
+
+  <!-- ══════════ NAV PUBLIK (Open Access & Login) — bilah biru royal ══════════ -->
+  <header id="pubnav" class="topnav" hidden>
+    <div class="topnav-inner">
+      <button type="button" class="pub-brand nav-brand" onclick="go('explore');scrollTo({top:0,behavior:'smooth'})"></button>
+      <nav class="hidden lg:flex items-center gap-1">
+        <button class="topnav-link" onclick="go('explore');setTimeout(()=>scrollTo({top:0,behavior:'smooth'}),30)">Beranda</button>
+        <button class="topnav-link" onclick="go('explore');setTimeout(()=>scrollToId('secApps'),50)">Produk</button>
+        <button class="topnav-link" onclick="go('explore');setTimeout(()=>scrollToId('secClass'),50)">Bootcamp</button>
+        <button class="topnav-link" onclick="go('explore');setTimeout(()=>scrollToId('secShow'),50)">Pameran Karya</button>
+        <button class="topnav-link" id="navGuides" hidden onclick="go('explore');setTimeout(()=>scrollToId('secGuide'),50)">Panduan</button>
+      </nav>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="toggleDarkMode()" class="icon-btn" title="Ganti tema"><i data-lucide="moon-star" class="w-[18px] h-[18px]"></i></button>
+        <button type="button" onclick="openRedeemDialog()" class="btn-onblue hidden sm:inline-flex"><i data-lucide="key-round" class="w-4 h-4"></i> Redeem</button>
+        <button type="button" onclick="go('login')" class="btn-amber btn-glow"><i data-lucide="log-in" class="w-4 h-4"></i> Member Area</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ NAV MEMBER — bilah biru royal ══════════ -->
+  <header id="topnav" class="topnav" hidden>
+    <div class="topnav-inner">
+      <button type="button" id="topnavBrand" class="nav-brand" onclick="go('home')"></button>
+      <nav id="topnavMenu" class="hidden xl:flex items-center gap-0.5"></nav>
+      <div class="flex items-center gap-1.5">
+        <button type="button" onclick="openRedeemDialog()" class="btn-amber hidden sm:inline-flex"><i data-lucide="key-round" class="w-4 h-4"></i> Redeem Kode</button>
+        <button type="button" onclick="toggleDarkMode()" class="icon-btn" title="Ganti tema"><i data-lucide="moon-star" class="w-[18px] h-[18px]"></i></button>
+        <button type="button" onclick="logout()" class="icon-btn" title="Keluar"><i data-lucide="log-out" class="w-[18px] h-[18px]"></i></button>
+        <button type="button" id="avatar" class="avatar" onclick="openProfileDialog()" title="Profil">U</button>
+      </div>
+    </div>
+    <nav id="topnavMobile" class="xl:hidden nav-strip"></nav>
+  </header>
+
+  <!-- ══════════ SIDEBAR ADMIN (navy) ══════════ -->
+  <button type="button" id="adminBurger" class="admin-burger" onclick="toggleSidebar()" aria-label="Buka menu"><i data-lucide="menu" class="w-5 h-5"></i></button>
+  <aside id="sidebar" class="sidebar" hidden>
+    <div class="sidebar-brand">
+      <div id="brandBadge" class="brand-badge">A</div>
+      <div class="min-w-0">
+        <p id="brandName" class="brand-title truncate">Product Hub</p>
+        <p class="brand-sub truncate" id="adminRoleLabel">Admin Suite</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav"><ul id="sidebarMenu" class="space-y-0.5"></ul></nav>
+    <div class="sidebar-foot">
+      <button type="button" onclick="openLink(location.pathname + '#/explore')" class="sidebar-link w-full"><i data-lucide="globe" class="w-[18px] h-[18px]"></i> <span>Lihat Halaman Publik</span></button>
+      <button type="button" onclick="toggleDarkMode()" class="sidebar-link w-full"><i data-lucide="moon-star" class="w-[18px] h-[18px]"></i> <span>Mode Gelap</span></button>
+      <button type="button" onclick="logout()" class="sidebar-link sidebar-link-danger w-full"><i data-lucide="log-out" class="w-[18px] h-[18px]"></i> <span>Keluar</span></button>
+    </div>
+  </aside>
+  <div id="sidebarScrim" class="sidebar-scrim" onclick="closeSidebar()"></div>
+
+  <!-- ══════════ KONTAINER SPA ══════════ -->
+  <main id="mainContent" class="main-content">
+    <!-- v3.5: bilah atas panel admin — pencarian cepat, notifikasi, profil -->
+    <header id="admintop" class="admintop" hidden>
+      <div class="admintop-search">
+        <i data-lucide="search" class="w-[18px] h-[18px]"></i>
+        <input id="adminSearch" type="search" autocomplete="off" placeholder="Cari menu, member, atau pesanan…" oninput="adminSearch(this.value)" onfocus="adminSearch(this.value)" onkeydown="adminSearchKey(event)">
+        <div id="adminSearchBox" class="admintop-drop" hidden></div>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <div class="relative">
+          <button type="button" class="icon-btn admintop-bell" onclick="toggleNotifDrop()" title="Perlu tindakan"><i data-lucide="bell" class="w-5 h-5"></i><span id="bellDot" class="bell-dot" hidden></span></button>
+          <div id="notifDrop" class="admintop-drop admintop-notif" hidden></div>
+        </div>
+        <div class="admintop-user"><span id="adminAvatar" class="cell-avatar">A</span><div class="min-w-0 hidden sm:block"><p id="adminName" class="text-sm font-semibold text-main truncate">Admin</p><p id="adminWho" class="text-xs text-muted truncate"></p></div></div>
+      </div>
+    </header>
+    <div id="app-container"></div>
+  </main>
+
+  <!-- ══════════ MODAL PRATINJAU ══════════ -->
+  <div id="previewModal" class="modal-backdrop" hidden onclick="if(event.target===this)closePreview()">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h3 id="previewTitle" class="text-base font-semibold text-main truncate">Pratinjau</h3>
+        <button type="button" class="icon-btn" onclick="closePreview()" aria-label="Tutup"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="previewBody" class="modal-body"></div>
+      <div class="modal-foot">
+        <button type="button" class="btn-ghost !w-auto" onclick="closePreview()"><i data-lucide="x" class="w-4 h-4"></i> Tutup</button>
+        <a id="previewDownload" href="#" class="btn-primary !w-auto"><i data-lucide="download" class="w-4 h-4"></i> Unduh</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ MODAL CHECKOUT (alur beli v2.0) ══════════ -->
+  <div id="checkoutModal" class="modal-backdrop" hidden>
+    <div class="modal-panel" style="max-width:620px">
+      <div class="modal-head">
+        <div class="min-w-0"><h3 class="text-base font-semibold text-main">Pembelian Produk</h3><p id="coProductName" class="text-xs text-muted truncate"></p></div>
+        <button type="button" class="icon-btn" onclick="closeCheckout()" aria-label="Tutup"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="stepper">
+        <div class="step is-active" data-step="1"><span class="step-dot">1</span><span class="step-label">Rincian</span></div><div class="step-line"></div>
+        <div class="step" data-step="2"><span class="step-dot">2</span><span class="step-label">Pembayaran</span></div><div class="step-line"></div>
+        <div class="step" data-step="3"><span class="step-dot">3</span><span class="step-label">Bukti Transfer</span></div>
+      </div>
+      <div class="modal-body" style="background:var(--surface)">
+        <section id="coStep1">
+          <div class="price-box"><p class="stat-label">Total yang harus dibayar</p><p id="coPrice" class="price-value">—</p>
+            <p class="text-xs text-muted mt-2">Pembayaran diverifikasi manual oleh Admin. Akses terbuka otomatis setelah disetujui.</p></div>
+          <div id="coSummary" class="mt-5"></div>
+          <button class="btn-primary w-full mt-6" onclick="coGoStep(2)"><i data-lucide="arrow-right" class="w-4 h-4"></i> Lanjut Pilih Pembayaran</button>
+        </section>
+        <section id="coStep2" hidden>
+          <p class="form-label mb-3">Pilih channel pembayaran</p><div id="coChannels" class="space-y-3"></div>
+          <div class="flex gap-3 mt-6">
+            <button class="btn-ghost flex-1" onclick="coGoStep(1)"><i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali</button>
+            <button id="coNext2" class="btn-primary flex-1" onclick="coGoStep(3)" disabled>Lanjut <i data-lucide="arrow-right" class="w-4 h-4"></i></button>
+          </div>
+        </section>
+        <section id="coStep3" hidden>
+          <p class="form-label mb-2">Unggah bukti transfer</p>
+          <div id="coDrop" class="dropzone"><i data-lucide="upload-cloud" class="w-7 h-7 mx-auto mb-2"></i><p class="text-sm font-semibold">Klik atau seret gambar ke sini</p><p class="text-xs mt-1">JPG, PNG, atau PDF · maks. 10 MB</p></div>
+          <input type="file" id="coFile" class="hidden" accept="image/*,.pdf">
+          <div id="coProofPreview" class="mt-3"></div>
+          <div class="mt-4"><label class="form-label" for="coNote">Catatan (opsional)</label><textarea id="coNote" rows="2" class="form-input" placeholder="Nama pengirim, jam transfer, dll."></textarea></div>
+          <div class="flex gap-3 mt-6">
+            <button class="btn-ghost flex-1" onclick="coGoStep(2)"><i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali</button>
+            <button id="coSubmit" class="btn-primary flex-1" onclick="submitOrder()" disabled><i data-lucide="send" class="w-4 h-4"></i> Kirim Pesanan</button>
+          </div>
+        </section>
+        <section id="coStep4" class="text-center" hidden>
+          <div class="w-16 h-16 mx-auto rounded-2xl grid place-items-center" style="background:rgba(245,158,11,.14);color:var(--warning)"><i data-lucide="clock" class="w-8 h-8"></i></div>
+          <h3 class="mt-4 text-lg font-semibold text-main">Menunggu Verifikasi Admin</h3>
+          <p class="mt-2 text-sm text-muted max-w-sm mx-auto">Pesanan Anda sudah kami terima. Akses produk terbuka otomatis begitu Admin menyetujui pembayaran.</p>
+          <p id="coOrderId" class="mono mt-3 text-sm"></p>
+          <div class="flex flex-col sm:flex-row gap-3 mt-6">
+            <button class="btn-ghost flex-1" onclick="closeCheckout(); go('orders');"><i data-lucide="receipt" class="w-4 h-4"></i> Lihat Pesanan Saya</button>
+            <a id="coContactAdmin" href="#" class="btn-primary flex-1"><i data-lucide="life-buoy" class="w-4 h-4"></i> Hubungi Admin</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastStack" class="toast-stack"></div>
+
+  <!-- Urutan penting: config → core → modul -->
+  <!-- v3.2: ikon = subset Lucide (28 KB, sebelumnya 354 KB). Modul admin (admin*.js) dimuat otomatis khusus Superadmin. -->
+  <script src="js/config.js?v=3.5" defer></script>
+  <script src="js/icons.js?v=3.5" defer></script>
+  <script src="js/core.js?v=3.5" defer></script>
+  <script src="js/public.js?v=3.5" defer></script>
+  <script src="js/member.js?v=3.5" defer></script>
+  <script src="js/custom.js?v=3.5" defer></script>
+  <script src="js/v34.js?v=3.5" defer></script>
+</body>
+</html>
