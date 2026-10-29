@@ -10,7 +10,7 @@
  *       angka berjalan, muncul saat digulir), mode pemeliharaan database.
  * ============================================================
  */
-const FRONT_VERSION = '3.5';
+const FRONT_VERSION = '3.6';
 
 // ════════════════════════════════════════════════════════════
 // 1. STATE
@@ -59,7 +59,7 @@ function userKey(k) { return 'u:' + (AppState.email || 'anon') + ':' + k; }
 // 3. API — fetch POST ke GAS (text/plain → tanpa CORS preflight)
 // ════════════════════════════════════════════════════════════
 /** Aksi baca (aman diulang otomatis bila jaringan HP putus-sambung). Aksi tulis TIDAK diulang. */
-const READ_ACTIONS = /^(publicBootstrap|memberBootstrap|session|productDetail|checkoutInfo|dashboard|systemStatus|productsAdmin|ordersAdmin|crm|accessHistory|keysAdmin|helpdeskAdmin|announcementsAdmin|showcaseAdmin|bootcampsAdmin|notifConfig|blastAdmin|blastPreview|blastQueue|logs|logsSince|settingsAdmin|customAdmin|batch|bootcampCheckToken|bootcampParticipants|guidesAdmin|adminTeam|resourceText|showcaseConfigAdmin)$/;
+const READ_ACTIONS = /^(publicBootstrap|memberBootstrap|session|productDetail|checkoutInfo|dashboard|systemStatus|productsAdmin|ordersAdmin|crm|accessHistory|keysAdmin|helpdeskAdmin|announcementsAdmin|showcaseAdmin|bootcampsAdmin|notifConfig|blastAdmin|blastPreview|blastQueue|logs|logsSince|settingsAdmin|customAdmin|batch|bootcampCheckToken|bootcampParticipants|guidesAdmin|adminTeam|resourceText|showcaseConfigAdmin|certVerify|bootcampRoom|learningPaths|bootcampCurriculum|bootcampSubmissions|bootcampProgress|bootcampEvalResults|portfoliosAdmin|certificatesAdmin|certAssets|learningPathsAdmin|accessRulesAdmin|previewAccessRule)$/;   // v3.6
 let _slowToastAt = 0, _maintToastAt = 0;
 
 /**
@@ -285,7 +285,7 @@ function loadScript(src, ordered) {
 /** Modul panel Superadmin dimuat hanya untuk Superadmin (HP member tidak mengunduhnya). */
 const AdminBundle = {
   p: null, loaded: false,
-  files: ['js/admin.js', 'js/admin-people.js', 'js/admin-content.js', 'js/admin-ops.js', 'js/admin-custom.js', 'js/admin-bootcamp.js', 'js/admin-karya.js'],
+  files: ['js/admin.js', 'js/admin-people.js', 'js/admin-content.js', 'js/admin-ops.js', 'js/admin-custom.js', 'js/admin-bootcamp.js', 'js/admin-karya.js', 'js/admin-v36.js'],   // v3.6
   ready() {
     if (this.p) return this.p;
     const v = (document.querySelector('script[src^="js/core.js"]') || {}).src || '';
@@ -614,7 +614,7 @@ function readFileAsBase64(file, maxMB) {
 
 /** Unggah berkas ke Drive via API. kind: thumb | doc | proof */
 async function uploadFile(kind, file, extra) {
-  const max = { thumb: 5, doc: 25, proof: 10 }[kind] || 5;
+  const max = { thumb: 5, doc: 25, proof: 10, bootmat: 25, certasset: 5 }[kind] || 5;   // v3.6: materi bootcamp & aset sertifikat
   const b64 = await readFileAsBase64(file, max);
   return api('upload', Object.assign({ kind: kind, base64: b64, fileName: file.name, mimeType: file.type || 'application/octet-stream' }, extra || {}), { timeout: 180000 });
 }

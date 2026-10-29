@@ -240,7 +240,8 @@ function renderExplore() {
 
   // Video latar dipertahankan saat halaman dirender ulang (tidak memutar ulang dari awal)
   const oldVid = root.querySelector('.hero35-video');
-  root.innerHTML = heroHtml + prodHtml + bootHtml + showHtml + guideHtml + customHtml + empty + accessHtml + footHtml;
+  const testiHtml = typeof testiSectionHtml === 'function' ? testiSectionHtml() : '';                       // v3.6: testimoni alumni bootcamp
+  root.innerHTML = heroHtml + prodHtml + bootHtml + testiHtml + showHtml + guideHtml + customHtml + empty + accessHtml + footHtml;
   const slot = root.querySelector('.hero35-video');
   if (slot) {
     if (oldVid && oldVid.dataset.vid === slot.dataset.vid && oldVid.firstChild) slot.replaceWith(oldVid);

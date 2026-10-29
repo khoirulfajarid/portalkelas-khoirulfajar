@@ -15,9 +15,11 @@ const ADMIN_MENU = [
     { id: 'orders', icon: 'receipt', label: 'Verifikasi Pesanan', badge: true },
     { id: 'custom', icon: 'wand-sparkles', label: 'Aplikasi Custom', badge: true, superOnly: true },
     { id: 'crm', icon: 'contact', label: 'CRM Member', badge: true },
-    { id: 'access', icon: 'user-plus', label: 'Pemberian Akses' }] },
+    { id: 'access', icon: 'user-plus', label: 'Pemberian Akses' },
+    { id: 'access-rules', icon: 'git-branch', label: 'Distribusi Akses', superOnly: true }] },   // v3.6
   { group: 'Konten', items: [
     { id: 'bootcamps', icon: 'calendar-days', label: 'Bootcamp', badge: true },
+    { id: 'paths', icon: 'route', label: 'Jalur Belajar' },                          // v3.6
     { id: 'showcase', icon: 'trophy', label: 'Pameran Karya', badge: true },
     { id: 'guides', icon: 'book-open', label: 'Panduan' },
     { id: 'announcements', icon: 'megaphone', label: 'Pengumuman' },
@@ -31,7 +33,7 @@ const ADMIN_MENU = [
     { id: 'settings', icon: 'settings', label: 'Pengaturan', superOnly: true }] }
 ];
 /** v3.5: halaman khusus Superadmin (role "Admin" diarahkan kembali ke Dashboard). */
-const SUPER_PAGES = ['custom', 'blast', 'notif', 'logs', 'import', 'settings'];
+const SUPER_PAGES = ['custom', 'blast', 'notif', 'logs', 'import', 'settings', 'access-rules'];   // v3.6: + Distribusi Akses
 /** Menu sesuai role yang sedang masuk. */
 function adminMenu() { return ADMIN_MENU.map(g => ({ group: g.group, items: g.items.filter(m => isSuper() || !m.superOnly) })).filter(g => g.items.length); }
 
@@ -51,6 +53,11 @@ const ACTION_LABELS = {
   SHOWCASE_SUBMIT: 'Ajukan Karya', SHOWCASE_APPROVE: 'Karya Disetujui', SHOWCASE_REJECT: 'Karya Ditolak', SHOWCASE_CONFIG: 'Pengaturan Pameran',
   GUIDE_SAVE: 'Panduan Disimpan', GUIDE_DELETE: 'Panduan Dihapus', GUIDE_CONFIG: 'Judul Panduan', NOTIF_SAVE: 'Notifikasi Diubah',
   BLAST_CREATE: 'Blast Dibuat', BLAST_PAUSE: 'Blast Dijeda', BLAST_RESUME: 'Blast Dilanjutkan', BLAST_CANCEL: 'Blast Dibatalkan', BLAST_RETRY: 'Blast Diulang', BLAST_RUN: 'Blast Manual', BLAST_DELETE: 'Blast Dihapus',
+  BOOTCAMP_TASK_SUBMIT: 'Tugas Dikirim', BOOTCAMP_TASK_APPROVE: 'Tugas Disetujui', BOOTCAMP_TASK_REVISE: 'Tugas Direvisi', BOOTCAMP_TASK_APPROVE_BULK: 'Tugas Disetujui Massal',   // v3.6
+  BOOTCAMP_EVAL: 'Kuesioner Diisi', BOOTCAMP_PORTFOLIO: 'Portofolio Dikirim', PORTFOLIO_CURATE: 'Kurasi Portofolio', PORTFOLIO_DELETE: 'Portofolio Dihapus Permanen',
+  CERT_ISSUE: 'Sertifikat Terbit', CERT_REVOKE: 'Sertifikat Dicabut', CERT_RESTORE: 'Sertifikat Dipulihkan', BOOTCAMP_SETTINGS: 'Setelan Bootcamp', BOOTCAMP_MATERIAL_SAVE: 'Materi Disimpan',
+  BOOTCAMP_MATERIAL_DELETE: 'Materi Dihapus', BOOTCAMP_DUPLICATE: 'Bootcamp Diduplikat', ACCESS_RULE_SAVE: 'Aturan Akses', ACCESS_RULE_RUN: 'Distribusi Akses', ACCESS_RULE_REVOKE: 'Aturan Akses Dicabut',
+  ACCESS_RULE_DELETE: 'Aturan Akses Dihapus', ACCESS_RULE_AUTO: 'Akses Otomatis', PATH_SAVE: 'Jalur Belajar', PATH_DELETE: 'Jalur Belajar Dihapus',
   SETTINGS_SAVE: 'Pengaturan Disimpan', BACKUP: 'Backup', LOG_ARCHIVE: 'Log Diarsipkan', IMPORT_RUN: 'Import Data', IMPORT_CSV: 'Import CSV', TRIGGER_INSTALL: 'Trigger Dipasang'
 };
 

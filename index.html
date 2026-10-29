@@ -20,12 +20,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/base.css?v=3.5">
-  <link rel="stylesheet" href="css/app.css?v=3.5">
+  <link rel="stylesheet" href="css/base.css?v=3.6">
+  <link rel="stylesheet" href="css/app.css?v=3.6">
   <!-- v3.5: desain biru elegan (hero video, kartu interaktif, dashboard baru) -->
-  <link rel="stylesheet" href="css/v35.css?v=3.5">
+  <link rel="stylesheet" href="css/v35.css?v=3.6">
+  <link rel="stylesheet" href="css/v36.css?v=3.6">
   <!-- Tailwind v3 hasil build (pengganti CDN Play: tanpa kompilasi di browser → jauh lebih ringan di HP) -->
-  <link rel="stylesheet" href="css/tw.css?v=3.5">
+  <link rel="stylesheet" href="css/tw.css?v=3.6">
 
   <!-- Skrip: defer = tidak memblokir tampilan. jQuery/DataTables/Chart.js & modul admin dimuat otomatis hanya untuk Superadmin/Admin -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js" defer></script>
@@ -65,7 +66,7 @@
       <button type="button" id="topnavBrand" class="nav-brand" onclick="go('home')"></button>
       <nav id="topnavMenu" class="hidden xl:flex items-center gap-0.5"></nav>
       <div class="flex items-center gap-1.5">
-        <button type="button" onclick="openRedeemDialog()" class="btn-amber hidden sm:inline-flex"><i data-lucide="key-round" class="w-4 h-4"></i> Redeem Kode</button>
+        <button type="button" onclick="openRedeemDialog()" class="btn-amber hidden sm:inline-flex" title="Redeem Kode" aria-label="Redeem Kode"><i data-lucide="key-round" class="w-4 h-4"></i> Redeem Kode</button>
         <button type="button" onclick="toggleDarkMode()" class="icon-btn" title="Ganti tema"><i data-lucide="moon-star" class="w-[18px] h-[18px]"></i></button>
         <button type="button" onclick="logout()" class="icon-btn" title="Keluar"><i data-lucide="log-out" class="w-[18px] h-[18px]"></i></button>
         <button type="button" id="avatar" class="avatar" onclick="openProfileDialog()" title="Profil">U</button>
@@ -183,12 +184,13 @@
 
   <!-- Urutan penting: config → core → modul -->
   <!-- v3.2: ikon = subset Lucide (28 KB, sebelumnya 354 KB). Modul admin (admin*.js) dimuat otomatis khusus Superadmin. -->
-  <script src="js/config.js?v=3.5" defer></script>
-  <script src="js/icons.js?v=3.5" defer></script>
-  <script src="js/core.js?v=3.5" defer></script>
-  <script src="js/public.js?v=3.5" defer></script>
-  <script src="js/member.js?v=3.5" defer></script>
-  <script src="js/custom.js?v=3.5" defer></script>
-  <script src="js/v34.js?v=3.5" defer></script>
+  <script src="js/config.js?v=3.6" defer></script>
+  <script src="js/icons.js?v=3.6" defer></script>
+  <script src="js/core.js?v=3.6" defer></script>
+  <script src="js/public.js?v=3.6" defer></script>
+  <script src="js/member.js?v=3.6" defer></script>
+  <script src="js/custom.js?v=3.6" defer></script>
+  <script src="js/v34.js?v=3.6" defer></script>
+  <script src="js/v36.js?v=3.6" defer></script>
 </body>
 </html>

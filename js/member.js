@@ -11,6 +11,7 @@
 const MEMBER_MENU = [
   { id: 'home', icon: 'layout-grid', label: 'Beranda' },
   { id: 'library', icon: 'graduation-cap', label: 'Kelas Saya' },
+  { id: 'jalur', icon: 'route', label: 'Jalur Belajar' },                  // v3.6: rekomendasi urutan belajar
   { id: 'bootcamp', icon: 'calendar-days', label: 'Bootcamp' },          // v3.4: jadwal, link pertemuan & absensi
   { id: 'karya', icon: 'trophy', label: 'Pameran Karya' },                 // v3.4: ajukan testimoni karya
   { id: 'guides', icon: 'book-open', label: 'Panduan' },                   // v3.5: panduan juga di dalam portal member

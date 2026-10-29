@@ -39,6 +39,7 @@ ADMIN_RENDER.bootcampsAdmin = function (list) {
         '<span class="badge badge-document">' + (c.total || 0) + ' peserta</span>' + (c.waiting ? '<span class="badge badge-warning">' + c.waiting + ' menunggu</span>' : '') + '</div>' +
       '<div class="flex gap-2 mt-auto pt-4"><button class="btn-primary flex-1 !py-2" onclick="go(\'admin/bootcamp/' + esc(b.id) + '\')"><i data-lucide="users" class="w-4 h-4"></i> Peserta & Absensi</button>' +
       '<button class="btn-icon !w-10 !h-10" title="Ubah" onclick="openBootcampForm(' + jsArg(b.id) + ')"><i data-lucide="pencil" class="w-4 h-4"></i></button>' +
+      '<button class="btn-icon !w-10 !h-10" title="Duplikat ke batch baru" onclick="openDuplicateBootcamp(' + jsArg(b.id) + ')"><i data-lucide="copy-plus" class="w-4 h-4"></i></button>' +   // v3.6
       '<button class="btn-icon !w-10 !h-10" title="Hapus" onclick="confirmDelete(\'bootcamp\',\'deleteBootcamp\',' + jsArg(b.id) + ',\'bootcampsAdmin\')"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div></article>';
   }).join('') : '<div class="sm:col-span-2 xl:col-span-3">' + emptyState('calendar-days', 'Belum ada bootcamp', 'Tambahkan bootcamp, atur token akses dari Lynk.id, jadwal, dan syarat pendaftaran.') + '</div>';
   refreshIcons();
@@ -65,7 +66,9 @@ async function openBootcampForm(id) {
         '<div><label class="form-label">Judul *</label><input id="bcTitle" class="form-input" value="' + esc(b ? b.title : '') + '"></div>' +
         '<div class="grid2"><div><label class="form-label">Keterangan jadwal (teks bebas, opsional)</label><input id="bcSched" class="form-input" value="' + esc(b ? b.schedule : '') + '" placeholder="4× pertemuan · tiap Sabtu 20.00 WIB (Zoom)"></div>' +
         '<div><label class="form-label">Kelas terkait (tampilan)</label><select id="bcProd" class="form-input">' + productOptions(b && b.productId) + '</select></div></div>' +
-        '<div><label class="form-label">Deskripsi</label><textarea id="bcDesc" class="form-input" rows="3">' + esc(b ? b.description : '') + '</textarea></div>' +
+        '<div class="grid2"><div><label class="form-label">Ringkasan kartu (maks 400 karakter)</label><input id="bcSum" class="form-input" maxlength="400" value="' + esc(b && b.v36 ? b.v36.summary || '' : '') + '" placeholder="1–2 kalimat yang tampil di kartu bootcamp"></div>' +   // v3.6
+        '<div><label class="form-label">Label banner (highlight)</label><input id="bcHi" class="form-input" maxlength="60" value="' + esc(b && b.v36 ? b.v36.highlightLabel || '' : '') + '" placeholder="mis. Batch 3 · Kursi Terbatas"></div></div>' +
+        '<div><label class="form-label">Deskripsi lengkap (tampil di detail)</label><textarea id="bcDesc" class="form-input" rows="3">' + esc(b ? b.description : '') + '</textarea></div>' +
         imageField('bcImg', 'Poster', b && b.posterFileId, b && b.posterUrl) +
         '<div class="grid2"><div><label class="form-label">Label Harga</label><input id="bcPrice" class="form-input" value="' + esc(b ? b.priceLabel : '') + '" placeholder="Rp 99.000 · Early bird"></div>' +
         '<div><label class="form-label">Label Kuota</label><input id="bcQuota" class="form-input" value="' + esc(b ? b.quotaLabel : '') + '" placeholder="Sisa 20 kursi"></div></div>' +
@@ -112,7 +115,8 @@ async function openBootcampForm(id) {
         ctaLabel: val('bcCta'), ctaUrl: val('bcUrl'), sort: Number(val('bcSort')) || 0, status: document.getElementById('bcStatus').value,
         accessToken: val('bcToken').toUpperCase().replace(/\s+/g, ''), tokenExpiry: val('bcExp'),
         accessProductIds: Array.from(document.querySelectorAll('.bcAcc:checked')).map(c => c.value), accessMode: document.getElementById('bcMode').value,
-        requirements: BF.reqs.filter(q => q.label), reminderMode: document.getElementById('bcRem').value };
+        requirements: BF.reqs.filter(q => q.label), reminderMode: document.getElementById('bcRem').value,
+        summary: val('bcSum'), highlightLabel: val('bcHi') };   // v3.6
       if (v.title.length < 3) return Swal.showValidationMessage('Judul minimal 3 karakter.');
       if (v.ctaUrl && !/^https?:\/\//i.test(v.ctaUrl)) return Swal.showValidationMessage('Link pembelian harus diawali https://');
       if (v.accessToken && !/^[A-Z0-9_-]{6,40}$/.test(v.accessToken)) return Swal.showValidationMessage('Token minimal 6 karakter: huruf, angka, "-" atau "_" (maks 40). Disarankan pakai token acak 🔀.');
@@ -225,13 +229,15 @@ function bdRender() {
       '<button class="btn-ghost !w-auto" onclick="copyText(' + jsArg(bootLink(b.id)) + ')"><i data-lucide="link" class="w-4 h-4"></i> Link Daftar</button>' +
       '<button class="btn-ghost !w-auto" onclick="bdExport()"><i data-lucide="download" class="w-4 h-4"></i> CSV</button>' +
       '<button class="btn-ghost !w-auto" onclick="withBusy(this,\'Memuat…\',()=>bdLoad(true))"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Segarkan</button>' +
+      '<button class="btn-ghost !w-auto" onclick="openDuplicateBootcamp(' + jsArg(b.id) + ')"><i data-lucide="copy-plus" class="w-4 h-4"></i> Duplikat</button>' +   // v3.6
       '<button class="btn-primary !w-auto" onclick="openBootcampForm(' + jsArg(b.id) + ')"><i data-lucide="pencil" class="w-4 h-4"></i> Ubah</button>') +
     '<div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-6">' + kpi('Peserta', P.length, 'users', cssVar('--accent')) + kpi('Menunggu Verifikasi', waiting, 'clock', cssVar('--warning')) +
       kpi('Disetujui', ok, 'badge-check', cssVar('--success')) + kpi('Rata-rata Kehadiran', avg + '%', 'calendar-check', cssVar('--indigo')) + '</div>' +
-    '<div class="seg mb-5">' + [['peserta', 'Peserta & Bukti'], ['absen', 'Absensi'], ['lanjut', 'Tindak Lanjut']].map(t =>
+    '<div class="seg mb-5 bd36-tabs">' + [['peserta', 'Peserta & Bukti'], ['absen', 'Absensi'], ['lanjut', 'Tindak Lanjut']].concat(typeof BD36_TABS !== 'undefined' ? BD36_TABS : []).map(t =>   // v3.6: + tab kurikulum dkk.
       '<button class="' + (BD.tab === t[0] ? 'is-active' : '') + '" onclick="BD.tab=\'' + t[0] + '\';bdRender()">' + t[1] + (t[0] === 'peserta' && waiting ? ' <span class="nav-badge">' + waiting + '</span>' : '') + '</button>').join('') + '</div>' +
     '<div id="bdBody"></div>';
-  if (BD.tab === 'peserta') bdPeserta(); else if (BD.tab === 'absen') bdAbsen(); else bdLanjut();
+  if (BD.tab === 'peserta') bdPeserta(); else if (BD.tab === 'absen') bdAbsen(); else if (BD.tab === 'lanjut') bdLanjut();
+  else if (typeof bd36Show === 'function') bd36Show(BD.tab);                                    // v3.6
   refreshIcons();
 }
 
